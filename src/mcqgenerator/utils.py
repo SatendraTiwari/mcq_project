@@ -29,9 +29,10 @@ def get_table_data(quiz_data):
             if(quiz_data.startswith("```json")):
                 clean_quiz = re.sub(r"^```json\s*|\s*```$", "", quiz_data.strip())
             else:
-                clean_quiz = quiz_data.strip()
+                clean_quiz = re.sub(r"^```json\s*|\s*```$", "", quiz_data.strip())
 
             quiz_dict = json.loads(clean_quiz)
+            print("type of quiz ",type(quiz_dict))
         elif isinstance(quiz_data, dict):
             # Already a dictionary
             quiz_dict = quiz_data
@@ -41,8 +42,10 @@ def get_table_data(quiz_data):
         quiz_table_data=[]
 
         # iterate over the quiz dictionary and extract the required information
-        for key,value in quiz_dict.list():
-            mcq = value["question"]
+
+        print("quiz dict :::::::::::::::::::::::::",quiz_dict)
+        for key,value in quiz_dict.items():
+            mcq = value["mcq"]
             options=" || ".join(
                 [
                     f"{option}-> {option_value}" for option, option_value in value["options"].items()
