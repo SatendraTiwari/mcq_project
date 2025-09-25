@@ -3,15 +3,15 @@ import json
 import traceback
 import pandas as pd
 from dotenv import load_dotenv
-from src.mcqgenerator.utils import read_file,get_table_data
+from src.mcqgenerator.utils import read_file, get_table_data # E:\genAI\mcq_project\src\mcqgenerator\utils.py
 import streamlit as st
-import src.mcqgenerator.MCQGenerator as generate_evaluate_chain
+from src.mcqgenerator.MCQGenerator import generate_evaluate_chain #
 from src.mcqgenerator.logger import logging
 import google.generativeai as genai
 from contextlib import contextmanager
 
 with open('E:\genAI\mcq_project\Response.json','r') as file:
-    RESPONSE_JSON = file.read(file)
+    RESPONSE_JSON = file.read()
 
 st.title("MCQ Generator and Evaluator")
 
@@ -46,7 +46,6 @@ def get_gemini_callback(model="gemini-2.5-flash"):
     print("Completion tokens:", tracker.completion_tokens)
     print("Total tokens:", tracker.total_tokens)
     print(f"Estimated cost: ${tracker.total_cost:.6f}")
-    return tracker
 
 
 
@@ -67,7 +66,7 @@ with st.form("user_inputs"):
     subject = st.text_input("Subject", max_chars=20)
 
     # Quiz Tone
-    tone = st.text_input("Quiz Tone", max_chars=20,placeholder="Simple")
+    tone = st.text_input("Quiz Tone", max_chars=20, placeholder="Simple")
 
     # Add Button 
     button = st.form_submit_button("Generate and Evaluate MCQs")
@@ -88,9 +87,22 @@ with st.form("user_inputs"):
             except Exception as e:
                 traceback.print_exception(type(e), e,e.__traceback__)
                 st.error(f"An error occurred: {e}")
-    else:
-        print(f"total tokens: {""}")
-
+            else:
+                print(f"total tokens:")
+                if isinstance(response, dict):
+                    quiz = response.get("quiz",None)
+                    if quiz is not None:
+                        table_data = get_table_data(quiz)
+                        if table_data is not None:
+                            df = pd.DataFrame(table_data)
+                            df.index = df.index + 1
+                            st.table(df)
+                            #Display the review in a text box as well 
+                            st.text_area(label="Review", value=response["review"])
+                        else:
+                            st.error("Error in the table data")
+                else:
+                    st.write(response)
 
 
 
